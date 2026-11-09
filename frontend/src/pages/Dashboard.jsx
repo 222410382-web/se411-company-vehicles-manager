@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom'
 import { useVehicles } from '../context/VehicleContext'
-import { STATUSES } from '../data/seedVehicles'
+import { STATUSES } from '../data/statuses'
 
 const DAY = 86400000
 
 export default function Dashboard() {
-  const { vehicles } = useVehicles()
+  const { vehicles, loading, error } = useVehicles()
   const soon = Date.now() + 30 * DAY
   const expiring = vehicles.filter(
     (v) => v.status !== 'Retired' && v.insuranceExpiry && new Date(v.insuranceExpiry).getTime() <= soon,
@@ -14,6 +14,8 @@ export default function Dashboard() {
   return (
     <>
       <h1>Dashboard</h1>
+      {loading && <p>Loading…</p>}
+      {error && <p className="error" role="alert">{error}</p>}
       <section className="cards">
         <div className="card stat"><span>Total vehicles</span><strong>{vehicles.length}</strong></div>
         {STATUSES.map((s) => (

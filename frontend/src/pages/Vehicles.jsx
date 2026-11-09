@@ -1,24 +1,46 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useVehicles } from '../context/VehicleContext'
 import StatusBadge from '../components/StatusBadge'
-import { STATUSES } from '../data/seedVehicles'
+import { STATUSES } from '../data/statuses'
+
+const PAGE_SIZE = 5
 
 export default function Vehicles() {
-  const { vehicles, removeVehicle } = useVehicles()
+  const { listVehicles, removeVehicle, version } = useVehicles()
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('All')
+  const [page, setPage] = useState(0)
+  const [result, setResult] = useState({ content: [], totalElements: 0, totalPages: 0 })
+  const [error, setError] = useState(null)
 
-  const q = query.trim().toLowerCase()
-  const shown = vehicles.filter(
-    (v) =>
-      (status === 'All' || v.status === status) &&
-      (!q || [v.plate, v.make, v.model, v.driver].some((t) => t.toLowerCase().includes(q))),
-  )
+  useEffect(() => {
+    let cancelled = false
+    listVehicles({ page, size: PAGE_SIZE, q: query.trim(), status })
+      .then((r) => {
+        if (cancelled) return
+        if (r.content.length === 0 && page > 0) setPage(page - 1) // last row of the last page was deleted
+        else {
+          setResult(r)
+          setError(null)
+        }
+      })
+      .catch((e) => !cancelled && setError(e.message))
+    return () => {
+      cancelled = true
+    }
+  }, [listVehicles, page, query, status, version])
 
-  const handleDelete = (v) => {
-    if (window.confirm(`Delete vehicle ${v.plate}?`)) removeVehicle(v.id)
+  const handleDelete = async (v) => {
+    if (!window.confirm(`Delete vehicle ${v.plate}?`)) return
+    try {
+      await removeVehicle(v.id)
+    } catch (e) {
+      setError(e.message)
+    }
   }
+
+  const { content: shown, totalElements, totalPages } = result
 
   return (
     <>
@@ -32,13 +54,24 @@ export default function Vehicles() {
           placeholder="Search plate, make, model, driver"
           aria-label="Search vehicles"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            setQuery(e.target.value)
+            setPage(0)
+          }}
         />
-        <select aria-label="Filter by status" value={status} onChange={(e) => setStatus(e.target.value)}>
+        <select
+          aria-label="Filter by status"
+          value={status}
+          onChange={(e) => {
+            setStatus(e.target.value)
+            setPage(0)
+          }}
+        >
           <option>All</option>
           {STATUSES.map((s) => <option key={s}>{s}</option>)}
         </select>
       </div>
+      {error && <p className="error" role="alert">{error}</p>}
       <div className="card table-wrap">
         <table>
           <thead>
@@ -69,6 +102,11 @@ export default function Vehicles() {
           </tbody>
         </table>
       </div>
+      <nav className="pagination" aria-label="Pagination">
+        <button className="btn" disabled={page === 0} onClick={() => setPage(page - 1)}>Previous</button>
+        <span>Page {totalPages === 0 ? 0 : page + 1} of {totalPages} ({totalElements} vehicles)</span>
+        <button className="btn" disabled={page + 1 >= totalPages} onClick={() => setPage(page + 1)}>Next</button>
+      </nav>
     </>
   )
 }

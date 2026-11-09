@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { STATUSES } from '../data/seedVehicles'
+import { STATUSES } from '../data/statuses'
 
 const empty = {
   plate: '', make: '', model: '', year: new Date().getFullYear(), mileage: 0,
