@@ -10,7 +10,7 @@ export default function About() {
     <>
       <h1>About</h1>
       <p>
-        Fleet Manager is a company vehicle asset management app built for SE411 (Fall 2026-27), Part 1.
+        Fleet Manager is a company vehicle asset management app built for SE411 (Fall 2026-27), with a React frontend and a Spring Boot backend.
       </p>
       <h2>Our team</h2>
       <div className="card table-wrap">

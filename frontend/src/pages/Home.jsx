@@ -40,12 +40,11 @@ export default function Home() {
       <section className="card">
         <h2>About the project</h2>
         <p>
-          Built for SE411 (Fall 2026-27), Part 1. This part is a React frontend that keeps its data in an
-          in-memory collection of objects, so changes are reset when the page is reloaded. A backend and
-          database are added in Part 2.
+          Built for SE411 (Fall 2026-27). A React frontend talks to a Java Spring Boot REST API that
+          stores vehicles in an H2 database, so changes persist until the backend restarts.
         </p>
         <p>
-          Built with React, Vite and React Router. See the <Link to="/about">About page</Link> for the team.
+          Built with React, Vite, React Router, Spring Boot and H2. See the <Link to="/about">About page</Link> for the team.
         </p>
       </section>
     </>
